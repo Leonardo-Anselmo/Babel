@@ -1,0 +1,32 @@
+# Secrets: never commit these
+.env
+.env.*
+!.env.example
+venice-key.txt
+*.pem
+*.key
+
+# Dependencies and build output
+node_modules/
+venv/
+.venv/
+__pycache__/
+dist/
+out/
+*.saving
+
+# Runtime data: call transcripts, memory, spending
+data/
+*.log
+deploy/.server
+
+# Generated end-to-end screenshots
+tools/e2e/shots/
+
+# Backups from the old copy-in delivery process
+gremlin-bot-backup-before-*/
+
+# OS clutter
+Thumbs.db
+desktop.ini
+.DS_Store

@@ -1,0 +1,9 @@
+{
+  "name": "winslow-desktop",
+  "productName": "Winslow",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Desktop app for starting, stopping and setting up the Discord voice bot",
+  "type": "module",
+  "main": "main.mjs"
+}

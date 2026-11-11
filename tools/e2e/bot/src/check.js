@@ -1,0 +1,11 @@
+const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+console.log('Pre-flight check\n');
+await wait(300);
+console.log('OK    Node.js version: 22.22.0');
+console.log('OK    Settings (.env, persona.md): name "Winslow", model claude-sonnet-5-5');
+await wait(300);
+console.log('OK    Discord: logged in as Winslow#2921');
+console.log('OK    Speech-to-text (Whisper large-v3-turbo on your graphics card): 140 ms');
+console.log("SKIP  Speech-to-text backup: no Deepgram key, so if Whisper stops the bot can't hear until it's back");
+await wait(300);
+console.log('\nAll good.');

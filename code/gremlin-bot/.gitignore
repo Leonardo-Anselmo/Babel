@@ -1,0 +1,7 @@
+node_modules/
+.env
+data/
+*.log
+deploy/.server
+__pycache__/
+*.saving

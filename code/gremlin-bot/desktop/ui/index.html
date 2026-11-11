@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Voice bot</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <img src="icon.png" alt="" class="brand-icon" />
+          <div>
+            <div class="brand-name bot-name"></div>
+            <div class="brand-sub">Discord voice buddy</div>
+          </div>
+        </div>
+        <nav class="nav" aria-label="Pages">
+          <button class="nav-item active" data-page="home">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.5 12 4l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" /></svg>
+            Home
+          </button>
+          <button class="nav-item" data-page="settings">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" /><circle cx="16" cy="7" r="2" /><circle cx="10" cy="17" r="2" /></svg>
+            Settings
+          </button>
+          <button class="nav-item" data-page="personality">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z" /><path d="M8.5 14.5s1.3 1.8 3.5 1.8 3.5-1.8 3.5-1.8M9 10h.01M15 10h.01" /></svg>
+            Personality
+          </button>
+          <button class="nav-item" data-page="usage">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+            Usage
+          </button>
+          <button class="nav-item" data-page="logs">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5" /></svg>
+            Logs
+          </button>
+        </nav>
+        <div class="sidebar-foot" id="appVersion"></div>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div class="topbar-left">
+            <h1 id="pageTitle">Home</h1>
+          </div>
+          <div class="topbar-right">
+            <span class="pill" id="statusPill"><span class="dot"></span><span id="statusText">Offline</span></span>
+            <button class="btn btn-primary" id="btnStart">Start</button>
+            <button class="btn" id="btnRestart" hidden>Restart</button>
+            <button class="btn btn-danger" id="btnStop" hidden>Stop</button>
+          </div>
+        </header>
+
+        <div class="banner" id="restartBanner" hidden>
+          <span>Restart <span class="bot-name"></span> to use your changes.</span>
+          <button class="btn btn-small" id="btnBannerRestart">Restart now</button>
+          <button class="banner-close" id="btnBannerClose" aria-label="Dismiss">&times;</button>
+        </div>
+
+        <div class="banner" id="updateBanner" hidden>
+          <span id="updateText"></span>
+          <button class="btn btn-small" id="btnUpdateRestart">Restart now</button>
+        </div>
+
+        <div class="content">
+          <!-- Home -->
+          <section class="page active" id="page-home">
+            <div class="hero card">
+              <img src="icon.png" alt="" class="hero-icon" />
+              <div class="hero-text">
+                <div class="hero-title" id="heroTitle"></div>
+                <div class="hero-sub" id="heroSub">Press Start to bring him online.</div>
+              </div>
+              <div class="hero-meta" id="heroMeta"></div>
+            </div>
+
+            <div class="card problem-card" id="problemCard" hidden>
+              <div class="problem-text">
+                <div class="problem-head" id="problemHead"></div>
+                <div class="problem-line" id="problemLine"></div>
+              </div>
+              <button class="btn btn-small" id="btnSeeLogs">See logs</button>
+            </div>
+
+            <div class="card warn-card" id="checkFailedCard" hidden>
+              <div class="card-head">
+                <h2>The start-up check found problems</h2>
+              </div>
+              <p class="muted">Usually a key needs fixing in Settings. If it's only temporary (a network hiccup), you can start anyway.</p>
+              <div class="row-actions">
+                <button class="btn btn-primary" id="btnStartAnyway">Start anyway</button>
+                <button class="btn" id="btnGoKeys">Open Settings</button>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-head"><h2>In a call</h2></div>
+                <div id="callsBody" class="muted">Not in a call. Type /join in Discord to bring him in.</div>
+                <div class="auto-join">
+                  <div>
+                    <div>Join calls by himself</div>
+                    <div class="muted small">Once two or more people are in a voice channel. /leave sends him away until everyone has left.</div>
+                  </div>
+                  <div class="segmented" id="autoJoinControl" role="radiogroup" aria-label="Join calls by himself">
+                    <button data-on="true" role="radio">On</button>
+                    <button data-on="false" role="radio">Off</button>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head"><h2>Chattiness</h2></div>
+                <p class="muted small">How often he jumps in without being called by name, and how long he keeps answering without it after he talks. Changes right away.</p>
+                <div class="segmented" id="chattinessControl" role="radiogroup" aria-label="Chattiness">
+                  <button data-level="off" role="radio">Off</button>
+                  <button data-level="low" role="radio">Low</button>
+                  <button data-level="medium" role="radio">Medium</button>
+                  <button data-level="high" role="radio">High</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-head"><h2>Hearing</h2></div>
+                <div id="hearingBody" class="kv"></div>
+                <div class="row-actions">
+                  <button class="btn btn-small" id="btnWhisperSetup">Run Whisper setup</button>
+                  <button class="btn btn-small" id="btnWhisperStop">Free graphics memory</button>
+                </div>
+                <p class="muted small" id="hearingHint"></p>
+              </div>
+              <div class="card clickable" id="spendCard" title="Open Usage">
+                <div class="card-head"><h2>Spending</h2></div>
+                <div class="spend">
+                  <div>
+                    <div class="spend-label">Today</div>
+                    <div class="spend-value" id="spendToday">$0.00</div>
+                  </div>
+                  <div>
+                    <div class="spend-label" id="spendMonthLabel">This month</div>
+                    <div class="spend-value" id="spendMonth">$0.00</div>
+                  </div>
+                </div>
+                <p class="muted small spend-note" id="spendNote" hidden></p>
+              </div>
+            </div>
+
+            <div class="card" id="checkCard" hidden>
+              <div class="card-head">
+                <h2>Start-up check</h2>
+                <span class="muted small" id="checkWhen"></span>
+              </div>
+              <ul class="checklist" id="checkList"></ul>
+            </div>
+          </section>
+
+          <!-- Settings -->
+          <section class="page" id="page-settings">
+            <div id="settingsGroups"></div>
+            <div class="savebar" id="settingsSavebar" hidden>
+              <span id="settingsDirtyText">Unsaved changes</span>
+              <div class="row-actions">
+                <button class="btn" id="btnSettingsDiscard">Discard</button>
+                <button class="btn btn-primary" id="btnSettingsSave">Save</button>
+              </div>
+            </div>
+          </section>
+
+          <!-- Personality -->
+          <section class="page" id="page-personality">
+            <div class="tabs" id="fileTabs">
+              <button class="tab active" data-file="persona">Personality</button>
+              <button class="tab" data-file="lore">Inside jokes</button>
+              <button class="tab" data-file="calls">Call memory</button>
+            </div>
+            <div class="card editor-card" id="editorCard">
+              <p class="muted small" id="fileHint"></p>
+              <textarea id="fileEditor" spellcheck="true" aria-label="File text"></textarea>
+              <div class="editor-foot">
+                <span class="muted small" id="fileStatus"></span>
+                <div class="row-actions">
+                  <button class="btn" id="btnFileRevert">Undo changes</button>
+                  <button class="btn btn-primary" id="btnFileSave">Save</button>
+                </div>
+              </div>
+            </div>
+            <div class="card" id="callsCard" hidden>
+              <div class="card-head">
+                <h2>Call memory</h2>
+                <button class="btn" id="btnForgetAllCalls">Forget all</button>
+              </div>
+              <p class="muted small" id="callsHint"></p>
+              <div class="calls-list" id="callsList"></div>
+            </div>
+          </section>
+
+          <!-- Usage -->
+          <section class="page" id="page-usage">
+            <div class="card warn-card" id="usageErrorCard" hidden>
+              <p class="usage-error" id="usageError"></p>
+            </div>
+            <div class="grid-2">
+              <div class="card">
+                <div class="card-head"><h2>Today</h2><span class="big-number" id="usageTodayTotal">$0.00</span></div>
+                <ul class="usage-lines" id="usageTodayLines"></ul>
+              </div>
+              <div class="card">
+                <div class="card-head"><h2 id="usageMonthTitle">This month</h2><span class="big-number" id="usageMonthTotal">$0.00</span></div>
+                <ul class="usage-lines" id="usageMonthLines"></ul>
+              </div>
+            </div>
+            <div class="card">
+              <div class="card-head">
+                <h2>Account credit</h2>
+                <button class="btn btn-small" id="btnCredits">Check now</button>
+              </div>
+              <div id="creditsBody" class="kv muted">Asks ElevenLabs and Deepgram what's left on your accounts.</div>
+            </div>
+            <p class="muted small">Estimates from list prices. The providers' own dashboards have the exact numbers.</p>
+          </section>
+
+          <!-- Logs -->
+          <section class="page" id="page-logs">
+            <div class="logs-head">
+              <div class="tabs" id="logTabs">
+                <button class="tab active" data-log="live">Live output</button>
+                <button class="tab" data-log="activity">Activity</button>
+                <button class="tab" data-log="whisper">Whisper</button>
+              </div>
+              <div class="logs-tools">
+                <input type="search" id="logFilter" placeholder="Show only lines with..." aria-label="Filter lines" />
+                <button class="btn btn-small" id="btnLogCopy">Copy</button>
+              </div>
+            </div>
+            <p class="muted small" id="logHint"></p>
+            <div class="log" id="logView" tabindex="0"></div>
+          </section>
+        </div>
+      </main>
+    </div>
+
+    <div class="modal" id="setupModal" hidden>
+      <div class="modal-box">
+        <div class="card-head">
+          <h2>Whisper setup</h2>
+          <span class="muted small" id="setupState">Running...</span>
+        </div>
+        <div class="log modal-log" id="setupLog"></div>
+        <div class="row-actions end">
+          <button class="btn btn-primary" id="btnSetupClose" disabled>Close</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

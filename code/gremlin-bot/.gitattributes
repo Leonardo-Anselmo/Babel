@@ -1,0 +1,4 @@
+# Windows batch files need CRLF; the server script needs LF.
+*.bat text eol=crlf
+*.sh text eol=lf
+*.ps1 text eol=crlf
